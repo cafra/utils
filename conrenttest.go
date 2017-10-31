@@ -15,7 +15,7 @@ var (
 
 type TestFun func() error
 
-func Start(do TestFun, args ...int) {
+func CurrentTest(do TestFun, args ...int) {
 	fmt.Println("======== START ======")
 
 	exit := make(chan bool)
@@ -49,9 +49,9 @@ func listen(exit chan bool) {
 	for range ticket.C {
 		tp := atomic.SwapInt64(&tps, 0)
 		fmt.Println("tps=", tp)
-		if tp == 0 {
-			exit <- true
-			return
-		}
+		//if tp == 0 {
+		//	exit <- true
+		//	return
+		//}
 	}
 }
