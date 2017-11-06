@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -18,14 +19,14 @@ type TestFun func() error
 func CurrentTest(do TestFun, args ...int) {
 	fmt.Println("======== START ======")
 
-	exit := make(chan bool)
-
 	if len(args) > 0 && args[0] > 0 {
 		goroutine_count = args[0]
 	}
 	if len(args) > 1 && args[1] > 0 {
 		ops_count = args[1]
 	}
+	wg := sync.WaitGroup{}
+	wg.Add(goroutine_count)
 
 	for cs := 0; cs < goroutine_count; cs++ {
 		go func() {
@@ -36,22 +37,18 @@ func CurrentTest(do TestFun, args ...int) {
 				}
 				atomic.AddInt64(&tps, 1)
 			}
+			wg.Done()
 		}()
 	}
-	go listen(exit)
-
-	<-exit
+	go listen()
+	wg.Wait()
 	fmt.Println("======== END ======")
 }
 
-func listen(exit chan bool) {
+func listen() {
 	ticket := time.NewTicker(time.Second)
 	for range ticket.C {
 		tp := atomic.SwapInt64(&tps, 0)
 		fmt.Println("tps=", tp)
-		//if tp == 0 {
-		//	exit <- true
-		//	return
-		//}
 	}
 }
