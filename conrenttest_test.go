@@ -7,7 +7,7 @@ import (
 
 func TestStart(t *testing.T) {
 	//Start(logger)
-	Start(logger, 10000, 10000)
+	CurrentTest(logger, 10000, 10000)
 	t.Log()
 }
 func logger() error {
