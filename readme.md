@@ -1,5 +1,7 @@
 ### 实践中封装一些方法
 
+[![Build Status](https://travis-ci.org/cafra/utils.svg?branch=master)](https://travis-ci.org/cafra/utils)
+
 #### 已实现功能
 - 并发测试
 - string bytes互转
