@@ -1,0 +1,14 @@
+hash: a0d8467a7e4006ce543f62717b0bad619f2a57533390d20e7a15391d5eefda16
+updated: 2017-11-22T21:33:35.034067361+08:00
+imports:
+- name: github.com/astaxie/beego
+  version: d96289a81bf67728cff7a19b067aaecc65a62ec6
+  subpackages:
+  - logs
+- name: github.com/bitly/go-nsq
+  version: eee57a3ac4174c55924125bb15eeeda8cffb6e6f
+- name: github.com/cafra/utils
+  version: 461111c248e25c03a32c6f1063d9b3e2c394641f
+- name: github.com/golang/snappy
+  version: 553a641470496b2327abcac10b36396bd98e45c9
+testImports: []
