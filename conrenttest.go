@@ -25,6 +25,7 @@ func CurrentTest(do TestFun, args ...int) {
 	if len(args) > 1 && args[1] > 0 {
 		ops_count = args[1]
 	}
+	fmt.Printf("Concurrent=%v	Each send=%v\n", goroutine_count, ops_count)
 	wg := sync.WaitGroup{}
 	wg.Add(goroutine_count)
 
