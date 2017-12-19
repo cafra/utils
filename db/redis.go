@@ -7,8 +7,11 @@ import (
 	"time"
 )
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/schema"
+	"strconv"
+	"strings"
 )
 
 const _NIL = "redigo: nil returned"
@@ -38,6 +41,11 @@ func NewRedisDao(cfgStr string, debug bool) (dao *RedisDao, err error) {
 		return nil, err
 	}
 
+	db, err := getDbId(u.Path)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("db id=%v invalid", db))
+	}
+
 	values, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
 		return nil, err
@@ -60,15 +68,23 @@ func NewRedisDao(cfgStr string, debug bool) (dao *RedisDao, err error) {
 			if c, err = redis.Dial("tcp", u.Host); err != nil {
 				return
 			}
+			dao.Debug("SELECT DB=%v", db)
+			if db > 0 {
+				if _, err = c.Do("SELECT", db); err != nil {
+					c.Close()
+					return
+				}
+			}
 			pass, ok := u.User.Password()
 			if !ok {
 				return
 			}
-			dao.Debug("AUTH |pass=%#v", pass)
+			dao.Debug("AUTH |pass=%v", pass)
 			if _, err = c.Do("AUTH", pass); err != nil {
 				c.Close()
 				return
 			}
+
 			return
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
@@ -78,6 +94,14 @@ func NewRedisDao(cfgStr string, debug bool) (dao *RedisDao, err error) {
 	}
 
 	return
+}
+
+func getDbId(a string) (int, error) {
+	str := strings.TrimPrefix(a, "/")
+	if len(str) == 0 {
+		return 0, nil
+	}
+	return strconv.Atoi(str)
 }
 
 func (this *RedisDao) Debug(format string, args ...interface{}) {
