@@ -3,8 +3,8 @@ package db
 import (
 	"errors"
 
-	"github.com/go-xorm/xorm"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-xorm/xorm"
 )
 
 var NoData = errors.New("no data")
@@ -20,7 +20,8 @@ type MysqlDao struct {
 	engine *xorm.Engine
 }
 
-func NewMysqlDao(cfgStr string, extraCfg *MsqlExtraCfg) (dao MysqlDao, err error) {
+func NewMysqlDao(cfgStr string, extraCfg *MsqlExtraCfg) (dao *MysqlDao, err error) {
+	dao = new(MysqlDao)
 	dao.engine, err = xorm.NewEngine("mysql", cfgStr)
 	if err != nil {
 		return
@@ -34,10 +35,6 @@ func NewMysqlDao(cfgStr string, extraCfg *MsqlExtraCfg) (dao MysqlDao, err error
 	//	)
 	//}
 	return
-}
-
-func NewDao() *MysqlDao {
-	return &MysqlDao{}
 }
 
 func (d *MysqlDao) Insert(data interface{}) (id int64, err error) {
