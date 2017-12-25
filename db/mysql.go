@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
+	redis_cache "github.com/go-xorm/xorm-redis-cache"
 )
 
 var NoData = errors.New("no data")
@@ -30,10 +31,12 @@ func NewMysqlDao(cfgStr string, extraCfg *MsqlExtraCfg) (dao *MysqlDao, err erro
 	dao.engine.SetMaxOpenConns(extraCfg.MaxOpenConns)
 	dao.engine.SetMaxIdleConns(extraCfg.MaxIdleConns)
 
-	//if model.AppConfig.AutoSync {
-	//	err = d.engine.Sync2(
-	//	)
-	//}
+	//add cache
+	dao.engine.SetDefaultCacher(
+		redis_cache.NewRedisCacher("localhost:6379",
+			"",
+			redis_cache.DEFAULT_EXPIRATION,
+			dao.engine.Logger()))
 	return
 }
 
