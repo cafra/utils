@@ -165,7 +165,14 @@ func (d *MysqlDao) UpdateByCols(id int64, data interface{}, Cols ...string) (err
 }
 
 func (d *MysqlDao) UpdateByCond(been interface{}, cond interface{}) (int64, error) {
-	return d.engine.Update(been, cond)
+	id, err := d.engine.Update(been, cond)
+	if err != nil {
+		return id, err
+	}
+	if id == 0 {
+		return id, NoData
+	}
+	return id, err
 }
 
 func (d *MysqlDao) Delete(data interface{}) (id int64, err error) {
