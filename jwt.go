@@ -25,6 +25,6 @@ func CheckJwtToken(tokenStr string, secret []byte) (claims jwt.MapClaims, err er
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
 	} else {
-		return nil, fmt.Errorf("token.Valid")
+		return nil, fmt.Errorf("token.invalid")
 	}
 }
