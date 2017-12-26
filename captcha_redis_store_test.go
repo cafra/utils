@@ -1,13 +1,14 @@
 package utils
 
+/*
 import (
 	"bytes"
 	"os"
 	"testing"
-	"utils/db"
 
 	"github.com/dchest/captcha"
 	"io/ioutil"
+	"utils/db"
 )
 
 var (
@@ -45,3 +46,4 @@ func TestCheck(t *testing.T) {
 func TestConvertS2B(t *testing.T) {
 	t.Log(ConvertS2B("123"))
 }
+*/
