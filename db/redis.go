@@ -191,7 +191,18 @@ func (this *RedisDao) Get(key string) (s string, err error) {
 	return
 }
 
-//Get
+//GetBytes
+func (this *RedisDao) GetBytes(key string) (bs []byte, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	bs, err = redis.Bytes(conn.Do("GET", key))
+	if err != nil {
+		return
+	}
+	return
+}
+
+//GetInt
 func (this *RedisDao) GetInt(key string) (n int, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
