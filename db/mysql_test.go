@@ -1,8 +1,7 @@
 package db
 
 import (
-	"fmt"
-	"main/model"
+	//"fmt"
 	"testing"
 	"utils"
 )
@@ -25,16 +24,16 @@ func init() {
 }
 
 func test() error {
-	u := new(model.UserInfo)
-	return md.GetById(1, u)
+	//u := new(model.UserInfo)
+	//return md.GetById(1, u)
 }
 func test2() error {
-	u := new(model.UserInfo)
-	err := md.GetById(1, u)
-	fmt.Printf("%#v", u)
-	err = md.UpdateById(1, model.UserInfo{Name: "czcz"})
-	md.GetById(1, u)
-	fmt.Printf("%#v", u)
+	//u := new(model.UserInfo)
+	//err := md.GetById(1, u)
+	//fmt.Printf("%#v", u)
+	//err = md.UpdateById(1, model.UserInfo{Name: "czcz"})
+	//md.GetById(1, u)
+	//fmt.Printf("%#v", u)
 
 	return err
 }
