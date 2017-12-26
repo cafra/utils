@@ -3,7 +3,7 @@ package db
 import (
 	//"fmt"
 	"testing"
-	"utils"
+	//"utils"
 )
 
 var (
@@ -26,6 +26,7 @@ func init() {
 func test() error {
 	//u := new(model.UserInfo)
 	//return md.GetById(1, u)
+	return nil
 }
 func test2() error {
 	//u := new(model.UserInfo)
@@ -38,10 +39,6 @@ func test2() error {
 	return err
 }
 
-func TestNewMysqlDao(t *testing.T) {
-	utils.CurrentTest(test, 200, 2000)
-
-}
 func TestMysqlDao_Get(t *testing.T) {
 	t.Log(test2())
 }
