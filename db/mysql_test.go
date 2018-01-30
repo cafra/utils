@@ -52,3 +52,31 @@ func BenchmarkMysqlDao_GetById(b *testing.B) {
 		}
 	}
 }
+
+type UserInfo struct {
+	Id    int64  `json:"-"`
+	Name  string `xorm:"VARCHAR(40)" json:"name"`
+	Phone int64  `xorm:"BIGINT(20) unique" json:"phone,string"`
+}
+
+func TestInsert(t *testing.T) {
+	u := &UserInfo{Phone: 13683566670}
+	t.Log(md.Engine().InsertOne(u))
+	t.Log(u)
+}
+
+type AuthStatus struct {
+	Site  string `xorm:"site"`
+	Value int    `xorm:"value"`
+}
+
+func TestGroup(t *testing.T) {
+	ats := make([]*AuthStatus, 0)
+	t.Log(md.Engine().SQL("select site,count(1) value from auth where uid=1 group by site ").Find(&ats))
+
+	t.Log(len(ats))
+	for _, info := range ats {
+		t.Log(info.Site, info.Value)
+	}
+
+}

@@ -311,6 +311,24 @@ func (this *RedisDao) LPOP(key string) (out string, err error) {
 	}
 	return
 }
+func (this *RedisDao) RPOP(key string) (out string, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	out, err = redis.String(conn.Do("RPOP", key))
+	if err != nil {
+		return
+	}
+	return
+}
+func (this *RedisDao) BRPOP(key string) (out []string, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	out, err = redis.Strings(conn.Do("BRPOP", key, 0))
+	if err != nil {
+		return
+	}
+	return
+}
 
 //LPUSH 整型回复: 在 push 操作后的 list 长度。
 func (this *RedisDao) LPUSH(key string, value ...interface{}) (num int, err error) {
