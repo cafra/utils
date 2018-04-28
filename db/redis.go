@@ -311,6 +311,15 @@ func (this *RedisDao) LPOP(key string) (out string, err error) {
 	}
 	return
 }
+func (this *RedisDao) LLEN(key string) (len int, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	len, err = redis.Int(conn.Do("LLEN", key))
+	if err != nil {
+		return
+	}
+	return
+}
 func (this *RedisDao) RPOP(key string) (out string, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
