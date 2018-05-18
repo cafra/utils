@@ -66,25 +66,29 @@ func NewRedisDao(cfgStr string, debug bool) (dao *RedisDao, err error) {
 		IdleTimeout: cfg._time_out,
 		Dial: func() (c redis.Conn, err error) {
 			if c, err = redis.Dial("tcp", u.Host); err != nil {
+				dao.Debug("Dial tcp host=%v err=%v", u.Host, err)
 				return
 			}
-			dao.Debug("SELECT DB=%v", db)
-			if db > 0 {
-				if _, err = c.Do("SELECT", db); err != nil {
-					c.Close()
-					return
-				}
-			}
+
 			pass, ok := u.User.Password()
 			if !ok {
+				dao.Debug("Password=%v not ok", pass)
 				return
 			}
-			dao.Debug("AUTH |pass=%v", pass)
+
 			if _, err = c.Do("AUTH", pass); err != nil {
+				dao.Debug("AUTH pass=%v err=%v", pass, err)
 				c.Close()
 				return
 			}
 
+			if db > 0 {
+				if _, err = c.Do("SELECT", db); err != nil {
+					dao.Debug("SELECT db=%v err=%v", db, err)
+					c.Close()
+					return
+				}
+			}
 			return
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
