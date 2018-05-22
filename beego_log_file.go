@@ -54,7 +54,14 @@ type fileLogWriter struct {
 	Module              string
 	Ip                  string
 	LoggerFuncCallDepth int `json:"logger_func_call_depth"`
+	Layout              string
 }
+
+const (
+	ELayoutJson   = "json"
+	ELayoutKVTab  = "tab"
+	ElayoutSimply = "simply"
+)
 
 // newFileWriter create a FileLogWriter returning as LoggerInterface.
 func newFileWriter() logs.Logger {
@@ -124,7 +131,8 @@ func formatTimeHeader(t time.Time) (ts string, d int) {
 	return
 }
 
-const MsgLayout = "timestamp=%v	level=%v	module=%v	ip=%v	scheme=%v"
+const MsgLayoutKVTab = "timestamp=%v	level=%v	module=%v	ip=%v	file=%v	scheme=%s\n"
+const MsgLayoutSimply = "%v	%v	%v	%v	%v	%s\n"
 const MsgLayoutJson = `{"timestamp":"%v","level":"%v","module":"%v","ip":"%v","file":"%v","scheme":%s}
 `
 
@@ -148,7 +156,20 @@ func (w *fileLogWriter) WriteMsg(when time.Time, msg string, level int) error {
 	}
 
 	h, d := formatTimeHeader(when)
-	msg = fmt.Sprintf(MsgLayout, h, LevelMsg[level], w.Module, w.Ip, fileInfo, msg[4:])
+
+	layout := ElayoutSimply
+	switch w.Layout {
+	case ELayoutJson:
+		layout = MsgLayoutJson
+	case ELayoutKVTab:
+		layout = MsgLayoutKVTab
+	case ElayoutSimply:
+		layout = MsgLayoutSimply
+	default:
+		layout = MsgLayoutSimply
+	}
+
+	msg = fmt.Sprintf(layout, h, LevelMsg[level], w.Module, w.Ip, fileInfo, msg[4:])
 
 	if w.Rotate {
 		w.RLock()

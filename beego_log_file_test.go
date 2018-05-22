@@ -6,6 +6,7 @@ import (
 	//"os"
 	////"path"
 	//"path/filepath"
+	"fmt"
 	"testing"
 )
 
@@ -21,15 +22,18 @@ func TestTest(t *testing.T) {
 	////logs.EnableFuncCallDepth(true)
 	////log := logs.GetLogger("service1")
 	////logs.Debug(`{"uid":10000,"age":11}`)
-	//logs.Debug(`{"uid":10000,"age":11}`)
+	logs.Debug(`{"uid":10000,"age":11}`)
 
 	//fmt.Printf(path.Base("/Users/cz/go/src/github.com/cafra/utils/beego_log_file_test.go"))
 	//xxxlog("hello", "user")
 }
+func init() {
+	cfg := `{"filename":"/Users/cz/Downloads/api/api.log","maxdays":365,"module":"main","ip":"127.0.0.1","logger_func_call_depth":5,"layout":"json"}`
+	fmt.Println(logs.SetLogger(AdapterMyFile, cfg))
 
+	//fmt.Printf("xxxxx")
+}
 func BenchmarkMylog(b *testing.B) {
-	cfg := `{"filename":"/Users/cz/Downloads/api/api.log","maxdays":365,"module":"main","ip":"127.0.0.1","logger_func_call_depth":5}`
-	logs.SetLogger(AdapterMyFile, cfg)
 	//logs.Async(10e5)
 
 	//logs.SetLogger(logs.AdapterFile, `{"filename":"/Users/cz/Downloads/api/api.log","maxdays":60}`)
