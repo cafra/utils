@@ -71,15 +71,12 @@ func NewRedisDao(cfgStr string, debug bool) (dao *RedisDao, err error) {
 			}
 
 			pass, ok := u.User.Password()
-			if !ok {
-				dao.Debug("Password=%v not ok", pass)
-				return
-			}
-
-			if _, err = c.Do("AUTH", pass); err != nil {
-				dao.Debug("AUTH pass=%v err=%v", pass, err)
-				c.Close()
-				return
+			if ok {
+				if _, err = c.Do("AUTH", pass); err != nil {
+					dao.Debug("AUTH pass=%v err=%v", pass, err)
+					c.Close()
+					return
+				}
 			}
 
 			if db > 0 {
