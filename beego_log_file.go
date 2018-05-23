@@ -51,10 +51,11 @@ type fileLogWriter struct {
 	fileNameOnly, suffix string // like "project.log", project is fileNameOnly and .log is suffix
 
 	//	add
-	Module              string
+	Module              string `json:"module"`
+	Action              string `json:"action"`
 	Ip                  string
-	LoggerFuncCallDepth int `json:"logger_func_call_depth"`
-	Layout              string
+	LoggerFuncCallDepth int    `json:"logger_func_call_depth"`
+	Layout              string `json:"layout"`
 }
 
 const (
@@ -131,12 +132,12 @@ func formatTimeHeader(t time.Time) (ts string, d int) {
 	return
 }
 
-const MsgLayoutKVTab = "timestamp=%v	level=%v	module=%v	ip=%v	file=%v	message=%s\n"
-const MsgLayoutSimply = "%v	%v	%v	%v	%v	%s\n"
-const MsgLayoutJson = `{"timestamp":"%v","level":"%v","module":"%v","ip":"%v","file":"%v","message":%s}
+const MsgLayoutKVTab = "timestamp=%v	level=%v	module=%v	action=%v	ip=%v	file=%v	message=%s\n"
+const MsgLayoutSimply = "%v	%v	%v	%v	%v	%v	%s\n"
+const MsgLayoutJson = `{"timestamp":"%v","level":"%v","module":"%v","action":"%v","ip":"%v","file":"%v","message":%s}
 `
 
-var LevelMsg = []string{"[M]", "[A]", "[C]", "ERROR", "WARN", "[N]", "INFO", "DEBUG"}
+var LevelMsg = []string{"EMERGENCY", "ALERT", "CRITICAL", "ERROR", "WARN", "NOTICE", "INFO", "DEBUG"}
 
 // WriteMsg write logger message into file.
 func (w *fileLogWriter) WriteMsg(when time.Time, msg string, level int) error {
@@ -169,7 +170,7 @@ func (w *fileLogWriter) WriteMsg(when time.Time, msg string, level int) error {
 		layout = MsgLayoutSimply
 	}
 
-	msg = fmt.Sprintf(layout, h, LevelMsg[level], w.Module, w.Ip, fileInfo, msg[4:])
+	msg = fmt.Sprintf(layout, h, LevelMsg[level], w.Module, w.Action, w.Ip, fileInfo, msg[4:])
 
 	if w.Rotate {
 		w.RLock()

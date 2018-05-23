@@ -6,32 +6,27 @@ import (
 	//"os"
 	////"path"
 	//"path/filepath"
-	"fmt"
+	//"fmt"
 	"testing"
+	//"time"
 )
 
 func TestTest(t *testing.T) {
-	//dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	//cfg := fmt.Sprintf(`{"filename":"/Users/cz/Downloads/api/api.log","maxdays":365,"module":"main","ip":"127.0.0.1","logger_func_call_depth":5}`)
-	//fmt.Println(logs.SetLogger(AdapterMyFile, cfg))
-	////fmt.Printf(dir, cfg)
-	//
-	////logs.SetLogger(logs.AdapterConsole)
-	//
-	////l := logs.GetLogger("action=input")
-	////logs.EnableFuncCallDepth(true)
-	////log := logs.GetLogger("service1")
-	////logs.Debug(`{"uid":10000,"age":11}`)
-	logs.Debug(`{"uid":10000,"age":11}`)
-
-	//fmt.Printf(path.Base("/Users/cz/go/src/github.com/cafra/utils/beego_log_file_test.go"))
-	//xxxlog("hello", "user")
+	for i := 0; i < 1; i++ {
+		l.Debug(`{"uid":10000,"age":11}`)
+		l2.Debug(`{"uid":10001,"age":11}`)
+		//fmt.Sprintf(MsgLayoutJson, "xx", "xx", "xxx", "1111111111", "cdcdsccdcd", "cdcdcdc")
+	}
 }
-func init() {
-	cfg := `{"filename":"/Users/cz/Downloads/api/api.log","maxdays":365,"module":"main","ip":"127.0.0.1","logger_func_call_depth":5,"layout":"json"}`
-	fmt.Println(logs.SetLogger(AdapterMyFile, cfg))
 
-	//fmt.Printf("xxxxx")
+var (
+	l  = logs.NewLogger(0)
+	l2 = logs.NewLogger(0)
+)
+
+func init() {
+	l.SetLogger(AdapterMyFile, `{"filename":"/Users/cz/Downloads/api/api-action1.log","maxdays":365,"module":"main","action":"test","ip":"127.0.0.1","logger_func_call_depth":4,"layout":"json"}`)
+	l2.SetLogger(AdapterMyFile, `{"filename":"/Users/cz/Downloads/api/api-action1.log","maxdays":365,"module":"main","action":"test2","ip":"127.0.0.1","logger_func_call_depth":4,"layout":"json"}`)
 }
 func BenchmarkMylog(b *testing.B) {
 	//logs.Async(10e5)
@@ -41,7 +36,10 @@ func BenchmarkMylog(b *testing.B) {
 	//logs.SetLogFuncCallDepth(3)
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		logs.Debug(`{"uid":10000,"age":11}`)
+		l.Debug(`{"uid":10000,"age":11}`)
+		//l2.Debug(`{"uid":10001,"age":11}`)
 		//fmt.Sprintf(MsgLayoutJson, "xx", "xx", "xxx", "1111111111", "cdcdsccdcd", "cdcdcdc")
 	}
+
+	//time.Sleep(time.Second)
 }
