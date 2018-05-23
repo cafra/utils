@@ -131,9 +131,9 @@ func formatTimeHeader(t time.Time) (ts string, d int) {
 	return
 }
 
-const MsgLayoutKVTab = "timestamp=%v	level=%v	module=%v	ip=%v	file=%v	scheme=%s\n"
+const MsgLayoutKVTab = "timestamp=%v	level=%v	module=%v	ip=%v	file=%v	message=%s\n"
 const MsgLayoutSimply = "%v	%v	%v	%v	%v	%s\n"
-const MsgLayoutJson = `{"timestamp":"%v","level":"%v","module":"%v","ip":"%v","file":"%v","scheme":%s}
+const MsgLayoutJson = `{"timestamp":"%v","level":"%v","module":"%v","ip":"%v","file":"%v","message":%s}
 `
 
 var LevelMsg = []string{"[M]", "[A]", "[C]", "ERROR", "WARN", "[N]", "INFO", "DEBUG"}
