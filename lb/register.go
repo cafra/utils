@@ -18,8 +18,7 @@ var (
 // etcds etcd 集群地址列表，"," 隔开的字符串
 func Register(name, endpoints, etcds string, ttl int64) (err error) {
 	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   strings.Split(etcds, ","),
-		DialTimeout: 5 * time.Second,
+		Endpoints: strings.Split(etcds, ","),
 	})
 	if err != nil {
 		return err
