@@ -49,4 +49,5 @@ func Register(name, endpoints, etcds string, ttl int64) (err error) {
 }
 func Deregister() {
 	deregister <- struct{}{}
+	<-deregister
 }
