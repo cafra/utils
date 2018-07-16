@@ -7,6 +7,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc/naming"
+	"log"
 )
 
 type watcher struct {
@@ -19,6 +20,7 @@ func (w *watcher) Next() ([]*naming.Update, error) {
 	prefix := fmt.Sprintf("/%v/%v/", Prefix, w.re.serviceName)
 
 	if !w.isInitialized {
+		log.Print("watcher initing")
 		resp, err := w.client.Get(context.Background(), prefix, clientv3.WithPrefix())
 		if err != nil {
 			return nil, err
@@ -33,7 +35,9 @@ func (w *watcher) Next() ([]*naming.Update, error) {
 		}
 		return updates, nil
 	}
+
 	for wresp := range w.client.Watch(context.Background(), prefix, clientv3.WithPrefix()) {
+		log.Print("watcher watching")
 		for _, ev := range wresp.Events {
 			switch ev.Type {
 			case mvccpb.PUT:
