@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/coreos/etcd/clientv3"
+	"traefik/log"
 )
 
 var (
 	Prefix     = "etcd3_naming"
-	deregister = make(chan struct{})
+	deregister = make(chan interface{})
 )
 
 // endpoints 服务的地址 host:port
@@ -22,7 +23,7 @@ func Register(name, endpoints, etcds string, ttl int64) (err error) {
 	if err != nil {
 		return err
 	}
-	//defer client.Close()
+	//defer client.Close() 坑，deregister 可以让client 逃逸到堆上，从而延长生命周期
 
 	key := fmt.Sprintf("/%v/%v/%v", Prefix, name, endpoints)
 	//grant
@@ -40,7 +41,8 @@ func Register(name, endpoints, etcds string, ttl int64) (err error) {
 	}
 	go func() {
 		<-deregister
-		client.Delete(context.Background(), key)
+		// 坑 既然都是lease  则删除的时候应该使用Revoke，不是del,结束时关闭client
+		client.Revoke(context.TODO(), lease.ID)
 		client.Close()
 		deregister <- struct{}{}
 	}()
