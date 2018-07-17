@@ -22,7 +22,7 @@ func Register(name, endpoints, etcds string, ttl int64) (err error) {
 	if err != nil {
 		return err
 	}
-	defer client.Close()
+	//defer client.Close()
 
 	key := fmt.Sprintf("/%v/%v/%v", Prefix, name, endpoints)
 	//grant
@@ -41,6 +41,7 @@ func Register(name, endpoints, etcds string, ttl int64) (err error) {
 	go func() {
 		<-deregister
 		client.Delete(context.Background(), key)
+		client.Close()
 		deregister <- struct{}{}
 	}()
 	return nil
