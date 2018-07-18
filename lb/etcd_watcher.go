@@ -12,7 +12,7 @@ import (
 
 type watcher struct {
 	isInitialized bool
-	re            *Resolver
+	re            *EtcdResolver
 	client        *clientv3.Client
 }
 
