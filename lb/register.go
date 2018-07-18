@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/coreos/etcd/clientv3"
-	"traefik/log"
 )
 
 var (
