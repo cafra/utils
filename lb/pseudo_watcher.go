@@ -1,7 +1,7 @@
 package lb
 
 import (
-	"github.com/murlokswarm/errors"
+	"errors"
 	"google.golang.org/grpc/naming"
 	"log"
 )
