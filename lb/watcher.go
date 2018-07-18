@@ -28,7 +28,7 @@ func (w *watcher) Next() ([]*naming.Update, error) {
 		w.isInitialized = true
 		//	初始化
 		addrs := extractAddrs(resp)
-		updates := make([]*naming.Update, len(addrs))
+		updates := make([]*naming.Update, 0, len(addrs))
 
 		for _, addr := range addrs {
 			updates = append(updates, &naming.Update{Op: naming.Add, Addr: addr})
@@ -37,7 +37,6 @@ func (w *watcher) Next() ([]*naming.Update, error) {
 	}
 
 	for wresp := range w.client.Watch(context.Background(), prefix, clientv3.WithPrefix()) {
-		log.Print("watcher watching")
 		for _, ev := range wresp.Events {
 			switch ev.Type {
 			case mvccpb.PUT:
