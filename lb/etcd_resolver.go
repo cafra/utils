@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type Resolver struct {
+type EtcdResolver struct {
 	serviceName string
 }
 
-func NewResolver(serviceName string) *Resolver {
-	return &Resolver{serviceName}
+func NewEtcdResolver(serviceName string) *EtcdResolver {
+	return &EtcdResolver{serviceName}
 }
 
-func (re *Resolver) Resolve(target string) (naming.Watcher, error) {
+func (re *EtcdResolver) Resolve(target string) (naming.Watcher, error) {
 	if re.serviceName == "" {
 		return nil, errors.New("lb: no service name provided")
 	}
