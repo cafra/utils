@@ -1,23 +1,24 @@
 package lb
 
 import (
+	"github.com/murlokswarm/errors"
 	"google.golang.org/grpc/naming"
 	"log"
 )
 
 type pseudoWatcher struct {
-	addrs []string
+	updatesChan chan []*naming.Update
 }
 
 func (w *pseudoWatcher) Next() ([]*naming.Update, error) {
-	updates := make([]*naming.Update, 0)
-	for _, addr := range w.addrs {
-		updates = append(updates, &naming.Update{Op: naming.Add, Addr: addr})
+	uc, ok := <-w.updatesChan
+	if !ok {
+		return nil, errors.New("updatesChan closed")
 	}
 	log.Print("pseudoWatcher Next")
-	return updates, nil
+	return uc, nil
 }
 
 func (w *pseudoWatcher) Close() {
-
+	close(w.updatesChan)
 }
