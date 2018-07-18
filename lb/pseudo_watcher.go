@@ -13,6 +13,7 @@ type pseudoWatcher struct {
 func (w *pseudoWatcher) Next() ([]*naming.Update, error) {
 	uc, ok := <-w.updatesChan
 	if !ok {
+		log.Print("pseudoWatcher Next !ok")
 		return nil, errors.New("updatesChan closed")
 	}
 	log.Print("pseudoWatcher Next")
