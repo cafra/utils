@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"net"
 	"sync"
 	"unsafe"
 )
@@ -30,4 +31,15 @@ func put(b *bytes.Buffer) { bufPool.Put(b) }
 func BufPoolFree(b *bytes.Buffer) {
 	b.Reset()
 	put(b)
+}
+
+func GetOutboundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return ""
+	}
+	defer conn.Close()
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP.String()
 }
