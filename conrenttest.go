@@ -10,8 +10,9 @@ import (
 
 var (
 	tps             int64 = 0
-	goroutine_count int   = 1000
-	ops_count       int   = 1000
+	total           int64
+	goroutine_count int = 1000
+	ops_count       int = 1000
 )
 
 type TestFun func() error
@@ -34,7 +35,7 @@ func CurrentTest(do TestFun, args ...int) {
 			for ps := 0; ps < ops_count; ps++ {
 				if err := do(); err != nil {
 					fmt.Errorf("err=%v", err)
-					os.Exit(0)
+					break
 				}
 				atomic.AddInt64(&tps, 1)
 			}
@@ -51,5 +52,10 @@ func listen() {
 	for range ticket.C {
 		tp := atomic.SwapInt64(&tps, 0)
 		fmt.Println("tps=", tp)
+		atomic.AddInt64(&total, tp)
+		if tp == 0 {
+			fmt.Println("========end total=%v", total)
+			os.Exit(0)
+		}
 	}
 }

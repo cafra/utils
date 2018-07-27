@@ -16,7 +16,7 @@ import (
 type Handler func(*sarama.ConsumerMessage) error
 
 func NewConsumer(brokers, topics string, handler Handler) {
-	groupID := "read_uncommitted"
+	groupID := "group-1"
 	config := cluster.NewConfig()
 	config.Group.Return.Notifications = true
 	config.Consumer.Offsets.CommitInterval = 1 * time.Second
@@ -27,7 +27,7 @@ func NewConsumer(brokers, topics string, handler Handler) {
 		log.Fatal("Failed open consumer: %v", err)
 		return
 	}
-	defer c.Close()
+
 	go func(c *cluster.Consumer) {
 		errors := c.Errors()
 		noti := c.Notifications()
