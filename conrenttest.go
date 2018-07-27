@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -53,9 +52,9 @@ func listen() {
 		tp := atomic.SwapInt64(&tps, 0)
 		fmt.Println("tps=", tp)
 		atomic.AddInt64(&total, tp)
-		if tp == 0 {
-			fmt.Println("========end total=%v", total)
-			os.Exit(0)
+		if tp == 0 && total > 0 {
+			fmt.Println("========end total=", total)
+			break
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -10,19 +9,20 @@ import (
 	"github.com/bsm/sarama-cluster" //support automatic consumer-group rebalancing and offset tracking
 )
 
-//type Consumer struct {
-//	cli sarama.Consumer
-//}
+type Consumer struct {
+	cli *cluster.Consumer
+}
 type Handler func(*sarama.ConsumerMessage) error
 
-func NewConsumer(brokers, topics string, handler Handler) {
+func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
+	consumer = new(Consumer)
 	groupID := "group-1"
 	config := cluster.NewConfig()
 	config.Group.Return.Notifications = true
 	config.Consumer.Offsets.CommitInterval = 1 * time.Second
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
-	c, err := cluster.NewConsumer(strings.Split(brokers, ","), groupID, strings.Split(topics, ","), config)
+	consumer.cli, err = cluster.NewConsumer(strings.Split(brokers, ","), groupID, strings.Split(topics, ","), config)
 	if err != nil {
 		log.Fatal("Failed open consumer: %v", err)
 		return
@@ -38,15 +38,19 @@ func NewConsumer(brokers, topics string, handler Handler) {
 			case <-noti:
 			}
 		}
-	}(c)
+	}(consumer.cli)
+	return
+}
 
-	fmt.Println("start accepting....")
+func (c *Consumer) Serve(h Handler) (err error) {
 	var cnt int = 0
-	for msg := range c.Messages() {
-		c.MarkOffset(msg, "")
+	for msg := range c.cli.Messages() {
+		c.cli.MarkOffset(msg, "")
 		cnt++
 
-		handler(msg)
+		if err = h(msg); err != nil {
+			return
+		}
 	}
-	fmt.Println("receive end!")
+	return
 }
