@@ -2,16 +2,17 @@ package kafka
 
 import (
 	"log"
+	"os"
+	"os/signal"
 	"strings"
-	"time"
 
-	//"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster" //support automatic consumer-group rebalancing and offset tracking
 )
 
 type Consumer struct {
-	cli *cluster.Consumer
+	signals chan os.Signal
+	cli     *cluster.Consumer
 }
 type Handler func(*sarama.ConsumerMessage) error
 
@@ -19,15 +20,17 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 	consumer = new(Consumer)
 	groupID := "group-1"
 	config := cluster.NewConfig()
+	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
-	config.Consumer.Offsets.CommitInterval = 1 * time.Second
-	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	consumer.cli, err = cluster.NewConsumer(strings.Split(brokers, ","), groupID, strings.Split(topics, ","), config)
 	if err != nil {
 		log.Fatal("Failed open consumer: %v", err)
 		return
 	}
+
+	consumer.signals = make(chan os.Signal, 1)
+	signal.Notify(consumer.signals, os.Interrupt)
 
 	go func(c *cluster.Consumer) {
 		errors := c.Errors()
@@ -36,8 +39,8 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 			select {
 			case err := <-errors:
 				log.Printf("Errors errrs %v", err)
-			case tmp := <-noti:
-				log.Printf("Notifications errrs %v", tmp)
+			case <-noti:
+				//log.Printf("Notifications errrs %v", tmp)
 			}
 		}
 	}(consumer.cli)
@@ -45,13 +48,15 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 }
 
 func (c *Consumer) Serve(h Handler) (err error) {
-	var cnt int
-	for msg := range c.cli.Messages() {
-		c.cli.MarkOffset(msg, "")
-		cnt++
-
-		if err = h(msg); err != nil {
-			continue
+	for {
+		select {
+		case msg, ok := <-c.cli.Messages():
+			if ok {
+				h(msg)
+				c.cli.MarkOffset(msg, "") // mark message as processed
+			}
+		case <-c.signals:
+			return
 		}
 	}
 	return
