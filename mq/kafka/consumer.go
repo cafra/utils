@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	//"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster" //support automatic consumer-group rebalancing and offset tracking
 )
@@ -34,8 +35,9 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 		for {
 			select {
 			case err := <-errors:
-				log.Printf("Notifications errrs %v", err)
-			case <-noti:
+				log.Printf("Errors errrs %v", err)
+			case tmp := <-noti:
+				log.Printf("Notifications errrs %v", tmp)
 			}
 		}
 	}(consumer.cli)
@@ -43,13 +45,13 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 }
 
 func (c *Consumer) Serve(h Handler) (err error) {
-	var cnt int = 0
+	var cnt int
 	for msg := range c.cli.Messages() {
 		c.cli.MarkOffset(msg, "")
 		cnt++
 
 		if err = h(msg); err != nil {
-			return
+			continue
 		}
 	}
 	return

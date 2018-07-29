@@ -20,7 +20,7 @@ func NewProducer(brokers string) (pd *Producer, err error) {
 	//p, err := sarama.NewAsyncProducer(strings.Split(brokers, ","), config)
 	pd.cli, err = sarama.NewSyncProducer(strings.Split(brokers, ","), config)
 	if err != nil {
-		log.Fatal("initProducer |NewSyncProducer err=%v", err)
+		log.Fatal("initProducer |NewSyncProducer err=", err)
 		return
 	}
 	return
