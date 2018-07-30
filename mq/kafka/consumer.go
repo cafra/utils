@@ -25,7 +25,7 @@ func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
 
 	consumer.cli, err = cluster.NewConsumer(strings.Split(brokers, ","), groupID, strings.Split(topics, ","), config)
 	if err != nil {
-		log.Fatal("Failed open consumer: %v", err)
+		log.Printf("Failed open consumer: %v", err)
 		return
 	}
 
