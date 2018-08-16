@@ -31,11 +31,11 @@ func Configure(name string, opts *Options) {
 	f.opts.Store(name, opts)
 }
 
-func Open(name string) (DB, error) {
+func Open(name string) (MongoDB, error) {
 	return f.Open(name)
 }
 
-func MustOpen(name string) DB {
+func MustOpen(name string) MongoDB {
 	db, err := f.Open(name)
 	if err == nil {
 		return db
@@ -43,7 +43,7 @@ func MustOpen(name string) DB {
 	panic(err)
 }
 
-func With(name string, fn func(db DB) error) error {
+func With(name string, fn func(db MongoDB) error) error {
 	db, err := f.Open(name)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ type Options struct {
 	Consistency string
 }
 
-type DB interface {
+type MongoDB interface {
 	//Session() *Session
 	C(name string) *Collection
 	FS(prefix string) *GridFS
@@ -94,7 +94,7 @@ type factory struct {
 	opts     sync.Map
 }
 
-func (f *factory) Open(name string) (DB, error) {
+func (f *factory) Open(name string) (MongoDB, error) {
 	session := f.sessions[name]
 	if session == nil {
 		var err error
