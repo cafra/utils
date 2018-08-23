@@ -52,7 +52,10 @@ func (c *Consumer) Serve(h Handler) (err error) {
 		select {
 		case msg, ok := <-c.cli.Messages():
 			if ok {
-				h(msg)
+				if h(msg) != nil {
+					log.Printf("Consumer|Serve handler err=%v", err)
+					continue
+				}
 				c.cli.MarkOffset(msg, "") // mark message as processed
 			}
 		case <-c.signals:

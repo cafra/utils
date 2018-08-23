@@ -1,0 +1,9 @@
+---
+
+db:
+  mongo:
+    uangme_loan:
+      address: mongodb://root:example@10.60.81.181:27017/uangme_loan?connect=direct&authSource=admin&authMechanism=SCRAM-SHA-1
+      poolSize: 200
+      dialTimeout: 5s
+      consistency: Primary

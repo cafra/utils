@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	md, err = NewMysqlDao("root:111111@tcp(localhost:3306)/cm_yn_loan?timeout=3s&parseTime=true&loc=Local&charset=utf8",
+	md, err = NewMysqlDao("exchange:liebao-testbQwVVF@tcp(52.76.255.205:3980)/exchange_kline?timeout=3s&parseTime=true&loc=Local&charset=utf8",
 		&MsqlExtraCfg{
 			ShowSQL:      true,
 			MaxIdleConns: 5,
@@ -25,8 +25,7 @@ func init() {
 }
 
 func test() error {
-	//u := new(model.UserInfo)
-	//return md.GetById(1, u)
+	//md.engine.Query(`select open, close from ex_scale_kline_aebtc where type = '60min' order by id desc limit 1`)
 	return nil
 }
 func test2() error {
@@ -41,7 +40,7 @@ func test2() error {
 }
 
 func TestMysqlDao_Get(t *testing.T) {
-	t.Log(test2())
+	t.Log(md.engine.Query(`select open, close from ex_scale_kline_aebtc where type = '60min' order by id desc limit 1`))
 }
 
 func BenchmarkMysqlDao_GetById(b *testing.B) {

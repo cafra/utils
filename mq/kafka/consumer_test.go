@@ -1,8 +1,10 @@
 package kafka
 
 import (
+	"fmt"
 	"github.com/Shopify/sarama"
 	"testing"
+	"time"
 )
 
 var (
@@ -11,8 +13,29 @@ var (
 )
 
 func TestConsumer(t *testing.T) {
-	//NewConsumer(KAddrs, KTopic, func(msg *sarama.ConsumerMessage) error {
-	//	t.Log(msg.Topic, msg.Value)
-	//	return nil
-	//})
+	consumer, err := NewConsumer(KAddrs, KTopic)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	consumer.Serve(func(m *sarama.ConsumerMessage) error {
+		t.Log(m.Topic, string(m.Value))
+		return nil
+	})
+}
+
+func BenchmarkConsume(b *testing.B) {
+	consumer, err := NewConsumer(KAddrs, KTopic)
+	if err != nil {
+		b.Fatal(err)
+	}
+	for i := 0; i < 5; i++ {
+		go b.Log(consumer.Serve(func(m *sarama.ConsumerMessage) error {
+			b.Log(i, "|", m.Topic, string(m.Value))
+			fmt.Println(i, "|", m.Topic, string(m.Value))
+			return nil
+		}))
+	}
+
+	time.Sleep(200 * time.Second)
 }
