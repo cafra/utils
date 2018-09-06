@@ -11,7 +11,7 @@ func TestNewProducer(t *testing.T) {
 		return
 	}
 
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 10; i++ {
 		t.Log(p.Write(KTopic, "hello"))
 		t.Log(p.Write(KTopic, struct {
 			Name string
