@@ -16,9 +16,9 @@ type Consumer struct {
 }
 type Handler func(*sarama.ConsumerMessage) error
 
-func NewConsumer(brokers, topics string) (consumer *Consumer, err error) {
+func NewConsumer(brokers, topics, group_id string) (consumer *Consumer, err error) {
 	consumer = new(Consumer)
-	groupID := "group-1"
+	groupID := group_id
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true

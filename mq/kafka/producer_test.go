@@ -5,12 +5,22 @@ import (
 )
 
 func TestNewProducer(t *testing.T) {
-	p, err := NewProducer("10.60.81.181:9092")
+	p, err := NewProducer(KAddrs)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	p.Write("test", "hello")
+
+	for i := 0; i < 1; i++ {
+		t.Log(p.Write(KTopic, "hello"))
+		t.Log(p.Write(KTopic, struct {
+			Name string
+			Age  int
+		}{
+			Name: "cz",
+			Age:  i,
+		}))
+	}
 
 	p.Close()
 }

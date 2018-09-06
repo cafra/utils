@@ -1,7 +1,11 @@
 package kafka
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -25,12 +29,28 @@ func NewProducer(brokers string) (pd *Producer, err error) {
 	}
 	return
 }
-func (p *Producer) Write(topic, m string) (err error) {
+func (p *Producer) Write(topic string, data interface{}) (err error) {
+	str := ""
+	kind := reflect.ValueOf(data).Kind()
+	switch kind {
+	case reflect.String:
+		str = data.(string)
+	case reflect.Ptr:
+		fallthrough
+	case reflect.Struct:
+		bs, _ := json.Marshal(data)
+		str = string(bs)
+	default:
+		return errors.New(fmt.Sprintf("Write data type =%v err", kind))
+	}
+
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
-		Value: sarama.ByteEncoder(m),
+		Value: sarama.ByteEncoder(str),
 	}
-	_, _, err = p.cli.SendMessage(msg)
+	if _, _, err = p.cli.SendMessage(msg); err != nil {
+		log.Println("Write |SendMessage err=%v", err)
+	}
 	return
 }
 
