@@ -7,19 +7,19 @@ import (
 	"github.com/globalsign/mgo"
 )
 
-type database struct {
+type Database struct {
 	db *mgo.Database
 }
 
-func (d *database) Close() {
+func (d *Database) Close() {
 	d.db.Session.Close()
 }
 
-func (d *database) C(name string) *mgo.Collection {
+func (d *Database) C(name string) *mgo.Collection {
 	return d.db.C(name)
 }
 
-func (d *database) Run(cmd, result interface{}) error {
+func (d *Database) Run(cmd, result interface{}) error {
 	return d.db.Run(cmd, result)
 }
 
@@ -47,13 +47,13 @@ func (d *Dao) Close() {
 	d.session.Close()
 }
 
-func (d *Dao) db() *database {
-	return &database{
+func (d *Dao) db() *Database {
+	return &Database{
 		db: d.session.Copy().DB(""),
 	}
 }
 
-func (d *Dao) Do(fn func(db *database)) {
+func (d *Dao) Do(fn func(db *Database)) {
 	db := d.db()
 	defer db.Close()
 
