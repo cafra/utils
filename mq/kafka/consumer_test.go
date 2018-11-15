@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	KAddrs = "localhost:9092"
-	KTopic = "test"
+	KAddrs = "149.129.215.154:9092,149.129.215.154:9093,149.129.215.154:9094"
+	//KAddrs = "10.60.81.181:9092"
+	KTopic = "test3"
 )
 
 func TestConsumer(t *testing.T) {
@@ -17,22 +18,25 @@ func TestConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	consumer2, err := NewConsumer(KAddrs, KTopic, "f2")
-	if err != nil {
-		t.Fatal(err)
-	}
-	go func() {
-		consumer.Serve(func(m *sarama.ConsumerMessage) error {
-			//t.Log(m.Topic, string(m.Value))
-			fmt.Println("f1", m.Topic, string(m.Value))
-			return nil
-		})
-	}()
-	consumer2.Serve(func(m *sarama.ConsumerMessage) error {
+	//consumer2, err := NewConsumer(KAddrs, KTopic, "f2")
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//go func() {
+	consumer.Serve(func(m *sarama.ConsumerMessage) error {
 		//t.Log(m.Topic, string(m.Value))
-		fmt.Println("f2", m.Topic, string(m.Value))
-		return nil
+		fmt.Println("f1", m.Topic, string(m.Value))
+		//if "10" == string(m.Value) {
+		//	panic("10")
+		//}
+		return fmt.Errorf("%s err", string(m.Value))
 	})
+	//}()
+	//consumer2.Serve(func(m *sarama.ConsumerMessage) error {
+	//	//t.Log(m.Topic, string(m.Value))
+	//	fmt.Println("f2", m.Topic, string(m.Value))
+	//	return nil
+	//})
 }
 
 func BenchmarkConsume(b *testing.B) {
