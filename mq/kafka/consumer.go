@@ -22,6 +22,10 @@ func NewConsumer(brokers, topics, group_id string) (consumer *Consumer, err erro
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
+	// 重要！！！！！！！！！！！
+	// OffsetNewest:pub 每次启动从队列的最新数据开始消费
+	// OffsetOldest: pub 每次启动从队列上次消费的地方开始消费
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
 	consumer.cli, err = cluster.NewConsumer(strings.Split(brokers, ","), groupID, strings.Split(topics, ","), config)
 	if err != nil {
@@ -47,6 +51,7 @@ func NewConsumer(brokers, topics, group_id string) (consumer *Consumer, err erro
 	return
 }
 
+// Handler 错误则不commit.下次启动可在此消费
 func (c *Consumer) Serve(h Handler) (err error) {
 	for {
 		select {
@@ -56,6 +61,7 @@ func (c *Consumer) Serve(h Handler) (err error) {
 					log.Printf("Consumer|Serve handler err=%v", err)
 					continue
 				}
+				//注意！！！！ 如果panic ，系统重启等，下次都会从上次最后一个数据消费。保证数据不丢失
 				c.cli.MarkOffset(msg, "") // mark message as processed
 			}
 		case <-c.signals:
