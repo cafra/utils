@@ -3,8 +3,10 @@ package db
 import (
 	//"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-xorm/xorm"
 	"testing"
 	//"utils"
+	"fmt"
 )
 
 var (
@@ -79,4 +81,45 @@ func TestGroup(t *testing.T) {
 		t.Log(info.Site, info.Value)
 	}
 
+}
+
+const cfg = "root:111111@tcp(localhost:3306)/cm_yn_loan?timeout=3s&parseTime=true&loc=Local&charset=utf8"
+
+func TestTransaction(t *testing.T) {
+	md, err = NewMysqlDao(cfg,
+		&MsqlExtraCfg{
+			ShowSQL:      true,
+			MaxIdleConns: 5,
+			MaxOpenConns: 10,
+		})
+	if err != nil {
+		panic(err)
+	}
+
+	type TestUser struct {
+		Id  int64
+		Age int
+	}
+	md.Engine().Sync2(
+		new(TestUser),
+	)
+
+	md.Transaction(func(session *xorm.Session) (err error) {
+		u := &TestUser{Age: 1}
+		_, err = session.Insert(u)
+		if err != nil {
+			fmt.Println("Insert err", err)
+			return
+		}
+		fmt.Println(u)
+		_, err = session.Update(TestUser{Age: 6}, TestUser{Id: u.Id})
+		if err != nil {
+			fmt.Println("Update err", err)
+			return
+		}
+		//panic("test")
+
+		return fmt.Errorf("test")
+		return
+	})
 }

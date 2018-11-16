@@ -2,7 +2,9 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/astaxie/beego/logs"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 )
@@ -188,4 +190,37 @@ func (d *MysqlDao) GetByCond(res interface{}, cond interface{}) error {
 
 func (d *MysqlDao) Engine() *xorm.Engine {
 	return d.engine
+}
+
+// 事务
+func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err error) {
+	// 新建事物
+	session := d.Engine().NewSession()
+
+	if err = session.Begin(); err != nil {
+		if session != nil {
+			session.Close()
+		}
+		return err
+	}
+
+	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("%v", e)
+			session.Rollback()
+			session.Close()
+			logs.Error("Transaction panic:", e)
+		}
+	}()
+
+	err = handler(session)
+	if err != nil {
+		logs.Error("Transaction  err=", err)
+		session.Rollback()
+	} else {
+		err = session.Commit()
+	}
+	session.Close()
+
+	return err
 }
