@@ -210,7 +210,7 @@ func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err e
 			err = fmt.Errorf("%v", e)
 			session.Rollback()
 			session.Close()
-			logs.Error("Transaction panic:", e, debug.Stack())
+			logs.Error("Transaction panic:", e, string(debug.Stack()))
 		}
 	}()
 
