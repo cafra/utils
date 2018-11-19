@@ -197,31 +197,22 @@ func (d *MysqlDao) Engine() *xorm.Engine {
 func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err error) {
 	// 新建事物
 	session := d.Engine().NewSession()
-
 	if err = session.Begin(); err != nil {
-		if session != nil {
-			session.Close()
-		}
 		return err
 	}
-
 	defer func() {
 		if e := recover(); e != nil {
-			err = fmt.Errorf("%v", e)
-			session.Rollback()
-			session.Close()
-			logs.Error("Transaction panic:", e, string(debug.Stack()))
+			err = fmt.Errorf("Transaction panic =%v 	stack=%v", e, string(debug.Stack()))
 		}
+		if err != nil {
+			logs.Error(err)
+			err = session.Rollback()
+		} else {
+			err = session.Commit()
+		}
+		session.Close()
 	}()
 
 	err = handler(session)
-	if err != nil {
-		logs.Error("Transaction  err=", err)
-		session.Rollback()
-	} else {
-		err = session.Commit()
-	}
-	session.Close()
-
-	return err
+	return
 }

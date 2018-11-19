@@ -111,12 +111,13 @@ func TestTransaction(t *testing.T) {
 			fmt.Println("Insert err", err)
 			return
 		}
+
 		fmt.Println(u)
-		//_, err = session.Update(TestUser{Age: 6}, TestUser{Id: u.Id})
-		//if err != nil {
-		//	fmt.Println("Update err", err)
-		//	return
-		//}
+		_, err = session.Update(TestUser{Age: 100000}, TestUser{Id: u.Id})
+		if err != nil {
+			fmt.Println("Update err", err)
+			return
+		}
 		//panic("test")
 
 		//return fmt.Errorf("test")
