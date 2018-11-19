@@ -88,7 +88,7 @@ const cfg = "root:111111@tcp(localhost:3306)/cm_yn_loan?timeout=3s&parseTime=tru
 func TestTransaction(t *testing.T) {
 	md, err = NewMysqlDao(cfg,
 		&MsqlExtraCfg{
-			ShowSQL:      true,
+			ShowSQL:      false,
 			MaxIdleConns: 5,
 			MaxOpenConns: 10,
 		})
@@ -112,14 +112,14 @@ func TestTransaction(t *testing.T) {
 			return
 		}
 		fmt.Println(u)
-		_, err = session.Update(TestUser{Age: 6}, TestUser{Id: u.Id})
-		if err != nil {
-			fmt.Println("Update err", err)
-			return
-		}
+		//_, err = session.Update(TestUser{Age: 6}, TestUser{Id: u.Id})
+		//if err != nil {
+		//	fmt.Println("Update err", err)
+		//	return
+		//}
 		//panic("test")
 
-		return fmt.Errorf("test")
+		//return fmt.Errorf("test")
 		return
 	})
 }

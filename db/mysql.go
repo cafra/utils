@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/astaxie/beego/logs"
 	_ "github.com/go-sql-driver/mysql"
@@ -209,7 +210,7 @@ func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err e
 			err = fmt.Errorf("%v", e)
 			session.Rollback()
 			session.Close()
-			logs.Error("Transaction panic:", e)
+			logs.Error("Transaction panic:", e, debug.Stack())
 		}
 	}()
 
