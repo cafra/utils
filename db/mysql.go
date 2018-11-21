@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/astaxie/beego/logs"
-	_ "github.com/go-sql-driver/mysql"
+	//_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 )
 
