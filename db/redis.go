@@ -169,6 +169,15 @@ func (this *RedisDao) SetNX2(key string, value interface{}) (num int, err error)
 	}
 	return
 }
+func (this *RedisDao) SetNX3(key string, value interface{},sec int) (num int, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	num, err = redis.Int(conn.Do("SET", key, value,"ex",sec,"nx"))
+	if err != nil {
+		return
+	}
+	return
+}
 
 // Del 可以删除多个key 返回删除key的num和错误
 func (this *RedisDao) Del(key ...interface{}) (num int, err error) {
