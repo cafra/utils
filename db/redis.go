@@ -169,12 +169,13 @@ func (this *RedisDao) SetNX2(key string, value interface{}) (num int, err error)
 	}
 	return
 }
-func (this *RedisDao) SetNX3(key string, value interface{},sec int) (num int, err error) {
+
+func (this *RedisDao) SetNX3(key string, value interface{},sec int) (bt bool, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	num, err = redis.Int(conn.Do("SET", key, value,"ex",sec,"nx"))
-	if err != nil {
-		return
+	num, err = redis.String(conn.Do("SET", key, value,"ex",sec,"nx"))
+	if err.Error() == _NIL {
+		return bt,nil
 	}
 	return
 }
