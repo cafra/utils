@@ -764,6 +764,17 @@ func (this *RedisDao) INCR(key string) (err error) {
 	}
 	return
 }
+
+func (this *RedisDao) INCRBY(key string,val int64) (err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	_, err = conn.Do("INCRBY", key,val)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (this *RedisDao) INCRRET(key string) (num int, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
