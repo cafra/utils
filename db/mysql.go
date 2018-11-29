@@ -206,9 +206,13 @@ func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err e
 		}
 		if err != nil {
 			logs.Error(err)
-			err = session.Rollback()
+			if e := session.Rollback(); e != nil {
+				fmt.Println(e)
+			}
 		} else {
-			err = session.Commit()
+			if e := session.Commit(); e != nil {
+				fmt.Println(e)
+			}
 		}
 		session.Close()
 	}()

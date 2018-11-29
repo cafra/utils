@@ -113,11 +113,11 @@ func TestTransaction(t *testing.T) {
 		}
 
 		fmt.Println(u)
-		_, err = session.Update(TestUser{Age: 100000}, TestUser{Id: u.Id})
-		if err != nil {
-			fmt.Println("Update err", err)
-			return
-		}
+		//_, err = session.Update(TestUser{Age: 100000}, TestUser{Id: u.Id})
+		//if err != nil {
+		//	fmt.Println("Update err", err)
+		//	return
+		//}
 		//panic("test")
 
 		//return fmt.Errorf("test")
