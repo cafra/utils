@@ -169,14 +169,18 @@ func (this *RedisDao) SetNX2(key string, value interface{}) (num int, err error)
 	}
 	return
 }
-func (this *RedisDao) SetNX3(key string, value interface{},sec int) (num int, err error) {
+
+func (this *RedisDao) SetNX3(key string, value interface{},sec int) (bt bool, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	num, err = redis.Int(conn.Do("SET", key, value,"ex",sec,"nx"))
+	_, err = redis.String(conn.Do("SET", key, value,"ex",sec,"nx"))
 	if err != nil {
-		return
+		if err.Error() == _NIL {
+			return false,nil
+		}
+		return false,err
 	}
-	return
+	return true,nil
 }
 
 // Del 可以删除多个key 返回删除key的num和错误
@@ -760,6 +764,17 @@ func (this *RedisDao) INCR(key string) (err error) {
 	}
 	return
 }
+
+func (this *RedisDao) INCRBY(key string,val int64) (err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	_, err = conn.Do("INCRBY", key,val)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (this *RedisDao) INCRRET(key string) (num int, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
@@ -769,6 +784,17 @@ func (this *RedisDao) INCRRET(key string) (num int, err error) {
 	}
 	return
 }
+
+func (this *RedisDao) INCRBY(key string,num int64) (err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	_, err = conn.Do("INCRBY", key,num)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (this *RedisDao) SETBIT(key string, bit, value int) (ret int, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
