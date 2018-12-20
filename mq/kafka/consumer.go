@@ -59,7 +59,6 @@ func (c *Consumer) Serve(h Handler) (err error) {
 			if ok {
 				if h(msg) != nil {
 					log.Printf("Consumer|Serve handler err=%v", err)
-					continue
 				}
 				//注意！！！！ 如果panic ，系统重启等，下次都会从上次最后一个数据消费。保证数据不丢失
 				c.cli.MarkOffset(msg, "") // mark message as processed

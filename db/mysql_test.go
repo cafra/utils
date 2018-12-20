@@ -7,6 +7,7 @@ import (
 	"testing"
 	//"utils"
 	"fmt"
+	"log"
 )
 
 var (
@@ -123,4 +124,44 @@ func TestTransaction(t *testing.T) {
 		//return fmt.Errorf("test")
 		return
 	})
+}
+
+func TestMustCols(t *testing.T) {
+	md, err = NewMysqlDao(cfg,
+		&MsqlExtraCfg{
+			ShowSQL:      true,
+			MaxIdleConns: 5,
+			MaxOpenConns: 10,
+		})
+	if err != nil {
+		panic(err)
+	}
+	type TestUser struct {
+		Id   int64
+		Age  int
+		Name string
+	}
+	md.Engine().Sync2(
+		new(TestUser),
+	)
+	u := TestUser{Id: 10000}
+	md.Engine().Delete(u)
+	md.Insert(
+		TestUser{
+			Id:10000,
+			Age:10,
+			Name:"cz",
+		},
+	)
+	md.Engine().Get(u)
+
+	fmt.Println(u)
+
+	count, err := md.Engine().MustCols("age").Update(TestUser{Age: 0, Name: "cz"}, TestUser{Id: 10000})
+
+	md.Engine().Get(u)
+
+	fmt.Println(u)
+
+	log.Print(count, err)
 }

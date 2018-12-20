@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"log"
+	//"log"
 	"net/url"
 	"time"
 )
@@ -109,7 +109,7 @@ func (this *RedisDao) Debug(format string, args ...interface{}) {
 	if !this.debug {
 		return
 	}
-	log.Printf(format, args)
+	//log.Printf(format, args)
 }
 
 func (this *RedisDao) RedisPool() *redis.Pool {
