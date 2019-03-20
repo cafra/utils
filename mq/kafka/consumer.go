@@ -64,6 +64,7 @@ func (c *Consumer) Serve(h Handler) (err error) {
 				c.cli.MarkOffset(msg, "") // mark message as processed
 			}
 		case <-c.signals:
+			c.cli.CommitOffsets()
 			return
 		}
 	}
