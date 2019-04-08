@@ -7,6 +7,7 @@ import (
 	"time"
 )
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/schema"
@@ -170,17 +171,44 @@ func (this *RedisDao) SetNX2(key string, value interface{}) (num int, err error)
 	return
 }
 
-func (this *RedisDao) SetNX3(key string, value interface{},sec int) (bt bool, err error) {
+func (this *RedisDao) SetNX3(key string, value interface{}, sec int) (bt bool, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	_, err = redis.String(conn.Do("SET", key, value,"ex",sec,"nx"))
+	_, err = redis.String(conn.Do("SET", key, value, "ex", sec, "nx"))
 	if err != nil {
 		if err.Error() == _NIL {
-			return false,nil
+			return false, nil
 		}
-		return false,err
+		return false, err
 	}
-	return true,nil
+	return true, nil
+}
+
+func (this *RedisDao) GetCache(
+	key string, ttl int, val interface{},
+	initHandler func() (interface{}, error)) (err error) {
+
+	bs, err := this.GetBytes(key)
+	if err != nil {
+		if err != redis.ErrNil {
+			return
+		}
+		var t interface{}
+		t, err = initHandler()
+		if err != nil {
+			return
+		}
+		bs, err = json.Marshal(t)
+		if err != nil {
+			return
+		}
+		err = this.SETEX(key, ttl, bs)
+		if err != nil {
+			return
+		}
+	}
+	err = json.Unmarshal(bs, val)
+	return
 }
 
 // Del 可以删除多个key 返回删除key的num和错误
@@ -765,10 +793,10 @@ func (this *RedisDao) INCR(key string) (err error) {
 	return
 }
 
-func (this *RedisDao) INCRBY(key string,val int64) (err error) {
+func (this *RedisDao) INCRBY(key string, val int64) (err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	_, err = conn.Do("INCRBY", key,val)
+	_, err = conn.Do("INCRBY", key, val)
 	if err != nil {
 		return
 	}

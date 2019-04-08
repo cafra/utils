@@ -36,3 +36,57 @@ func TestBRPOP(t *testing.T) {
 	}
 
 }
+
+func TestGetCache(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=100&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	var tt = new(struct {
+		Name string
+		Age  int
+	})
+
+	f := func() (a interface{}, err error) {
+		a = &struct {
+			Name string
+			Age  int
+		}{
+			"cz", 11,
+		}
+
+		return
+	}
+
+	err = dao.GetCache("5555", 1, tt, f)
+	t.Logf("over %v	%v", tt, err)
+
+}
+
+var f = func() (a interface{}, err error) {
+	a = &struct {
+		Name string
+		Age  int
+	}{
+		"cz", 11,
+	}
+
+	return
+}
+
+func BenchmarkGetCache(b *testing.B) {
+	b.ReportAllocs()
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=100&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		var tt = new(struct {
+			Name string
+			Age  int
+		})
+		err = dao.GetCache("i", 10000, tt, f)
+		b.Log(tt)
+	}
+}
