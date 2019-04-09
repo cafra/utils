@@ -42,10 +42,10 @@ func TestGetCache(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var tt = new(struct {
+	tt := struct {
 		Name string
 		Age  int
-	})
+	}{}
 
 	f := func() (a interface{}, err error) {
 		a = &struct {
@@ -58,7 +58,7 @@ func TestGetCache(t *testing.T) {
 		return
 	}
 
-	err = dao.GetCache("666", tt, 1000,true, f)
+	err = dao.GetCache("666", tt, 1000, true, f)
 	t.Logf("over %v	%v", tt, err)
 }
 

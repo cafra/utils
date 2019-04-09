@@ -1,18 +1,17 @@
 package db
 
 import (
-	"errors"
-	//"log"
-	"net/url"
-	"time"
-)
-import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gorilla/schema"
+	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/schema"
 )
 
 const _NIL = "redigo: nil returned"
@@ -185,9 +184,16 @@ func (this *RedisDao) SetNX3(key string, value interface{}, sec int) (bt bool, e
 }
 
 func (this *RedisDao) GetCache(
-	key string, val interface{},
+	key string, bean interface{},
 	ttl int, refresh bool,
 	initHandler func() (interface{}, error)) (err error) {
+
+	beanValue := reflect.ValueOf(bean)
+	if beanValue.Kind() != reflect.Ptr {
+		return errors.New("needs a pointer to a value")
+	} else if beanValue.Elem().Kind() == reflect.Ptr {
+		return errors.New("a pointer to a pointer is not allowed")
+	}
 
 	bs, err := this.GetBytes(key)
 	if err != nil || refresh {
@@ -212,7 +218,7 @@ func (this *RedisDao) GetCache(
 			return
 		}
 	}
-	err = json.Unmarshal(bs, val)
+	err = json.Unmarshal(bs, bean)
 	return
 }
 
