@@ -37,31 +37,30 @@ import (
 //
 //}
 
-//func TestGetCache(t *testing.T) {
-//	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=100&wait=true&timeout=3s", true)
-//	if err != nil {
-//		panic(err)
-//	}
-//	var tt = new(struct {
-//		Name string
-//		Age  int
-//	})
-//
-//	f := func() (a interface{}, err error) {
-//		a = &struct {
-//			Name string
-//			Age  int
-//		}{
-//			"cz", 11,
-//		}
-//
-//		return
-//	}
-//
-//	err = dao.GetCache("5555", 1, tt, f)
-//	t.Logf("over %v	%v", tt, err)
-//
-//}
+func TestGetCache(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=100&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	var tt = new(struct {
+		Name string
+		Age  int
+	})
+
+	f := func() (a interface{}, err error) {
+		a = &struct {
+			Name string
+			Age  int
+		}{
+			"cz", 11,
+		}
+
+		return
+	}
+
+	err = dao.GetCache("666", tt, 1000,true, f)
+	t.Logf("over %v	%v", tt, err)
+}
 
 var f = func() (a interface{}, err error) {
 	a = &struct {
@@ -87,7 +86,7 @@ func BenchmarkGetCache(b *testing.B) {
 			Age  int
 		})
 		key := fmt.Sprint(i)
-		err = dao.GetCache(key, tt, 0, f)
+		err = dao.GetCache(key, tt, 0, false, f)
 		b.Log(tt)
 	}
 }
