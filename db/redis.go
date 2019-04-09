@@ -185,7 +185,7 @@ func (this *RedisDao) SetNX3(key string, value interface{}, sec int) (bt bool, e
 }
 
 func (this *RedisDao) GetCache(
-	key string, ttl int, val interface{},
+	key string, val interface{}, ttl int,
 	initHandler func() (interface{}, error)) (err error) {
 
 	bs, err := this.GetBytes(key)
@@ -202,7 +202,11 @@ func (this *RedisDao) GetCache(
 		if err != nil {
 			return
 		}
-		err = this.SETEX(key, ttl, bs)
+		if ttl <= 0 {
+			err = this.Set(key, bs)
+		} else {
+			err = this.SETEX(key, ttl, bs)
+		}
 		if err != nil {
 			return
 		}
