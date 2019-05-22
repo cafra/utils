@@ -1,56 +1,39 @@
 package kafka
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/Shopify/sarama"
 	"testing"
-	"time"
+	//"time"
+	//"github.com/Shopify/sarama"
+	"fmt"
 )
 
 var (
-	KAddrs = "149.129.215.154:9092,149.129.215.154:9093,149.129.215.154:9094"
-	//KAddrs = "10.60.81.181:9092"
-	KTopic = "test3"
+	//KAddrs = "149.129.215.154:9092,149.129.215.154:9093,149.129.215.154:9094"
+	KAddrs = "localhost:9092"
+	KTopic = "test8"
 )
 
-func TestConsumer(t *testing.T) {
-	consumer, err := NewConsumer(KAddrs, KTopic, "f1")
-	if err != nil {
-		t.Fatal(err)
+type exampleConsumerGroupHandler struct{}
+
+func (exampleConsumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
+func (exampleConsumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
+func (h exampleConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for msg := range claim.Messages() {
+		fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
+		sess.MarkMessage(msg, "")
 	}
-	//consumer2, err := NewConsumer(KAddrs, KTopic, "f2")
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//go func() {
-	consumer.Serve(func(m *sarama.ConsumerMessage) error {
-		//t.Log(m.Topic, string(m.Value))
-		fmt.Println("f1", m.Topic, string(m.Value))
-		//if "10" == string(m.Value) {
-		//	panic("10")
-		//}
-		return fmt.Errorf("%s err", string(m.Value))
-	})
-	//}()
-	//consumer2.Serve(func(m *sarama.ConsumerMessage) error {
-	//	//t.Log(m.Topic, string(m.Value))
-	//	fmt.Println("f2", m.Topic, string(m.Value))
-	//	return nil
-	//})
+	return nil
 }
 
-func BenchmarkConsume(b *testing.B) {
-	consumer, err := NewConsumer(KAddrs, KTopic, "f")
-	if err != nil {
-		b.Fatal(err)
-	}
-	for i := 0; i < 5; i++ {
-		go b.Log(consumer.Serve(func(m *sarama.ConsumerMessage) error {
-			b.Log(i, "|", m.Topic, string(m.Value))
-			fmt.Println(i, "|", m.Topic, string(m.Value))
-			return nil
-		}))
-	}
+func TestConsumer(t *testing.T) {
+	//NewConsumer2(KAddrs, KTopic, "group_test2", exampleConsumerGroupHandler{})
 
-	time.Sleep(200 * time.Second)
+	c, err := NewConsumer3(KAddrs, KTopic, "group_test3")
+	t.Log(err)
+	c.Serve(func(message *sarama.ConsumerMessage) error {
+		fmt.Printf("%s 	%s\n", message.Topic, message.Value)
+		return nil
+	})
 }

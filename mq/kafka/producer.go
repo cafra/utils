@@ -49,7 +49,7 @@ func (p *Producer) Write(topic string, data interface{}) (err error) {
 		Value: sarama.ByteEncoder(str),
 	}
 	if _, _, err = p.cli.SendMessage(msg); err != nil {
-		log.Println("Write |SendMessage err=%v", err)
+		log.Printf("Write |SendMessage err=%v", err)
 	}
 	return
 }
