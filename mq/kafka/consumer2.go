@@ -8,11 +8,32 @@ import (
 	"github.com/Shopify/sarama"
 )
 
+type CommonHandler func(*sarama.ConsumerMessage) (err error, reConsume bool)
+
+type exampleConsumerGroupHandler struct {
+	handler CommonHandler
+}
+
+func (exampleConsumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
+func (exampleConsumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
+func (h exampleConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) (err error) {
+	for msg := range claim.Messages() {
+		err, reConsume := h.handler(msg)
+		fmt.Printf("Message topic:%q 	partition:%d 	offset:%d	value:%s	err=%v	reConsume=%v\n ",
+			msg.Topic, msg.Partition, msg.Offset, msg.Value, err, reConsume)
+		if !reConsume {
+			// 不需要重复消费，则自动提交
+			sess.MarkMessage(msg, "")
+		}
+	}
+	return nil
+}
+
 // brokers: 逗号分隔的服务器列表
 // topics:	逗号分隔的topic列表
 // group_id:消费组名字
 // handler:	消费接口
-func NewConsumer2(brokers, topics, group_id string, handler sarama.ConsumerGroupHandler) {
+func NewConsumer2(brokers, topics, group_id string, handler CommonHandler) {
 	// Init config, specify appropriate version
 	config := sarama.NewConfig()
 	config.Version = sarama.V0_10_2_0
@@ -49,8 +70,12 @@ func NewConsumer2(brokers, topics, group_id string, handler sarama.ConsumerGroup
 	// Iterate over consumer sessions.
 	ctx := context.Background()
 	topicsList := strings.Split(topics, ",")
+
 	for {
-		err := group.Consume(ctx, topicsList, handler)
+		err := group.Consume(ctx, topicsList,
+			exampleConsumerGroupHandler{
+				handler: handler,
+			})
 		if err != nil {
 			fmt.Println("KAFKA |Consume err=", err)
 		}
