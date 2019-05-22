@@ -37,12 +37,12 @@ func NewConsumer2(brokers, topics, group_id string, handler sarama.ConsumerGroup
 	if err != nil {
 		panic(err)
 	}
-	//defer func() { _ = group.Close() }()
+	defer func() { _ = group.Close() }()
 
 	// Track errors
 	go func() {
 		for err := range group.Errors() {
-			fmt.Println("KAFKA group", err)
+			fmt.Println("KAFKA |group Errors=", err)
 		}
 	}()
 
@@ -52,7 +52,7 @@ func NewConsumer2(brokers, topics, group_id string, handler sarama.ConsumerGroup
 	for {
 		err := group.Consume(ctx, topicsList, handler)
 		if err != nil {
-			panic(err)
+			fmt.Println("KAFKA |Consume err=", err)
 		}
 	}
 
