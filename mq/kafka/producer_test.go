@@ -13,7 +13,7 @@ func TestNewProducer(t *testing.T) {
 		return
 	}
 
-	for i := 1; i < 1000; i++ {
+	for i := 1; i < 10000000; i++ {
 		t.Log(p.Write(KTopic, fmt.Sprint(i)))
 		//t.Log(p.Write(KTopic, struct {
 		//	Name string
