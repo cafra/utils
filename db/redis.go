@@ -129,10 +129,12 @@ func (this *RedisDao) TTL(key string) (ttl int, err error) {
 
 //集合操作
 //SADD 可以添加多个 返回成功数量
-func (this *RedisDao) SADD(key string, value interface{}) (num int, err error) {
+func (this *RedisDao) SADD(key string, value ...interface{}) (num int, err error) {
+	args := []interface{}{key}
+	args = append(args, value...)
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	num, err = redis.Int(conn.Do("SADD", key, value))
+	num, err = redis.Int(conn.Do("SADD", args...))
 	if err != nil {
 		return
 	}
