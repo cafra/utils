@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	md, err = NewMysqlDao("exchange:liebao-testbQwVVF@tcp(52.76.255.205:3980)/exchange_kline?timeout=3s&parseTime=true&loc=Local&charset=utf8",
+	md, err = NewMysqlDao("",
 		&MsqlExtraCfg{
 			ShowSQL:      true,
 			MaxIdleConns: 5,
@@ -126,6 +126,8 @@ func TestTransaction(t *testing.T) {
 	})
 }
 
+//Cols 		只更新指定字段，及时为0值
+//MustCols	除了指定字段外，其他额外非0值，也会更新
 func TestMustCols(t *testing.T) {
 	md, err = NewMysqlDao(cfg,
 		&MsqlExtraCfg{
@@ -148,16 +150,16 @@ func TestMustCols(t *testing.T) {
 	md.Engine().Delete(u)
 	md.Insert(
 		TestUser{
-			Id:10000,
-			Age:10,
-			Name:"cz",
+			Id:   10000,
+			Age:  10,
+			Name: "cz",
 		},
 	)
 	md.Engine().Get(u)
 
 	fmt.Println(u)
 
-	count, err := md.Engine().MustCols("age").Update(TestUser{Age: 0, Name: "cz"}, TestUser{Id: 10000})
+	count, err := md.Engine().Cols("age").Update(TestUser{Age: 0, Name: "cz"}, TestUser{Id: 10000})
 
 	md.Engine().Get(u)
 
