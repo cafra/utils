@@ -122,11 +122,24 @@ func TestDelayConsume(t *testing.T) {
 		panic(err)
 	}
 
-	t.Log(dao.DelayConsume("testDelay", 10, func() int64 {
+	dao.DelayConsume("testDelay", 2, func() int64 {
 		return 10
-	}, func(task string) error {
+	}, func(task interface{}, ctime int64) error {
 		log.Printf("=================== %v", task)
-		return nil
-	}))
-	t.Log("======")
+
+		return fmt.Errorf("test")
+	}, 3, func(err error) {
+		fmt.Println("alert", err)
+	})
+
+}
+
+func TestDelayAdd(t *testing.T) {
+
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Log(dao.DelayAdd("testDelay", 100))
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
@@ -575,7 +576,7 @@ func (this *RedisDao) ZREMRANGEBYRANK(key string, stop int) (num int, err error)
 }
 
 //ZADD
-func (this *RedisDao) ZADD(key string, sorce int, member string) (num int, err error) {
+func (this *RedisDao) ZADD(key string, sorce int64, member string) (num int, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
 	num, err = redis.Int(conn.Do("ZADD", key, sorce, member))
@@ -661,10 +662,10 @@ else
 end
 `
 
-func (this *RedisDao) ZRANGEDelayTask(key string, deadline int64) (tasks []string, err error) {
+func (this *RedisDao) ZRANGEDelayTask(key string, deadline int64) (tasks map[string]int64, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	tasks, err = redis.Strings(conn.Do("EVAL", ScriptDelay, 1, key, deadline))
+	tasks, err = redis.Int64Map(conn.Do("EVAL", ScriptDelay, 1, key, deadline))
 	if err != nil {
 		return
 	}
@@ -787,28 +788,95 @@ func (this *RedisDao) ZREVRANK(key string, member string) (num int, err error) {
  *  key 				队列key
  *  interval			查询间隔 单位s
  *  delayThreshold		获取延时阈值,处理条件 (now - ctime)>=delayThreshold	单位s
- *  handler				任务处理函数
+ *  handler				任务处理函数: 报错时,tash 重现放回队列
+ *  retryThreshold   	错误重试次数阈值
+ *	alarm				报警方法:
  */
-func (this *RedisDao) DelayConsume(key string, interval int64, threshold func() int64, handler func(task string) error) error {
+func (this *RedisDao) DelayConsume(topic string,
+	interval int64,
+	threshold func() int64,
+	handler func(task interface{}, ctime int64) error,
+	retryThreshold int,
+	alarm func(err error)) {
 
 	ticker := time.NewTicker(time.Second * time.Duration(interval))
 
 	for now := range ticker.C {
 		deadline := now.Unix() - threshold()
-		tasks, err := this.ZRANGEDelayTask(key, deadline)
+		this.delayDo(deadline, topic, retryThreshold, handler, alarm)
+	}
+	return
+}
+
+func (this *RedisDao) delayDo(deadline int64,
+	topic string,
+	retryThreshold int,
+	handler func(task interface{}, ctime int64) error,
+	alarm func(err error)) error {
+
+	delayTask := new(delayTask)
+
+	tasks, err := this.ZRANGEDelayTask(topic, deadline)
+	if err != nil {
+		err = errors.Wrapf(err, "delayDo ZRANGEDelayTask topic=%v deadline=%v", topic, deadline)
+		return err
+	}
+
+	for taskStr, ctime := range tasks {
+		err = json.Unmarshal(bytes.NewBufferString(taskStr).Bytes(), delayTask)
 		if err != nil {
-			fmt.Printf("DelayConsume ZRANGEDelayTask err=%v\n", err)
+			fmt.Println("DelayConsume Unmarshal Task", taskStr, "err", err)
 			continue
 		}
 
-		for _, task := range tasks {
-			err = handler(task)
-			if err != nil {
-				fmt.Printf("DelayConsume ZRANGEDelayTask handler err=%v\n", err)
+		err = handler(delayTask.Data, ctime)
+		if err != nil {
+			if delayTask.HasRetry < retryThreshold {
+				_, e := this.ZADD(topic, ctime, delayTask.incRetry().toString())
+				fmt.Println("DelayConsume ZRANGEDelayTask handler err=", err, "ZADD err", e, "HasRetry", delayTask.HasRetry)
+			} else {
+				alarm(errors.Wrapf(err, "Task Info=%v retryThreshold=%v", delayTask.toString(), retryThreshold))
 			}
 		}
 	}
-	return nil
+	return err
+}
+
+type delayTask struct {
+	Data     interface{}
+	CTime    int64 // 创建时间
+	HasRetry int   // 已经重试次数
+}
+
+func (t *delayTask) incRetry() *delayTask {
+	if t == nil {
+		return nil
+	}
+	t.HasRetry += 1
+
+	return t
+}
+
+func (t *delayTask) toString() string {
+	bs, _ := json.Marshal(t)
+	return bytes.NewBuffer(bs).String()
+}
+
+func (this *RedisDao) DelayAdd(topic string, task interface{}) (err error) {
+	ctime := time.Now().Unix()
+	taskTmp := delayTask{
+		Data:  task,
+		CTime: ctime,
+	}
+	bs, err := json.Marshal(taskTmp)
+	if err != nil {
+		errors.Wrapf(err, "DelayAdd topic=%v task=%v", topic, task)
+		return
+	}
+	buffer := bytes.NewBuffer(bs).String()
+	_, err = this.ZADD(topic, ctime, buffer)
+	err = errors.Wrapf(err, "DelayAdd ZADD topic=%v ctime=%v buffer=%v", topic, ctime, buffer)
+	return
 }
 
 //EXPIRE 设置一个key 的过期时间 返回值int 1 如果设置了过期时间 0 如果没有设置过期时间，或者不能设置过期时间
