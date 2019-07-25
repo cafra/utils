@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	"log"
+
 	//"github.com/garyburd/redigo/redis"
 	"testing"
 )
@@ -104,4 +106,27 @@ func BenchmarkGetXXX(b *testing.B) {
 	}
 
 	//todo 并发10000 pprof 分析原因
+}
+
+func TestZRANGEDelayTask(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	t.Log(dao.ZRANGEDelayTask("testDelay", 1993886989))
+}
+
+func TestDelayConsume(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Log(dao.DelayConsume("testDelay", 10, func() int64 {
+		return 10
+	}, func(task string) error {
+		log.Printf("=================== %v", task)
+		return nil
+	}))
+	t.Log("======")
 }

@@ -2,8 +2,8 @@ package db
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -650,6 +650,27 @@ func (this *RedisDao) ZREM(key string, member string) (num int, err error) {
 	return
 }
 
+// EVAL 原子
+const ScriptDelay = `
+local message = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'WITHSCORES', 'LIMIT', 0, 1);
+if #message > 0 then
+  redis.call('ZREM', KEYS[1], message[1]);
+  return message;
+else
+  return {};
+end
+`
+
+func (this *RedisDao) ZRANGEDelayTask(key string, deadline int64) (tasks []string, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	tasks, err = redis.Strings(conn.Do("EVAL", ScriptDelay, 1, key, deadline))
+	if err != nil {
+		return
+	}
+	return
+}
+
 //ZREVRANGEBYSCORE 逆序份数  获取的 前N个数据
 func (this *RedisDao) ZREVRANGEBYSCORE(key string, limit int) (list map[string]string, err error) {
 	conn := this.redisPool.Get()
@@ -759,6 +780,35 @@ func (this *RedisDao) ZREVRANK(key string, member string) (num int, err error) {
 	num, err = redis.Int(conn.Do("ZREVRANK", key, member))
 
 	return num, err
+}
+
+/**
+ *  延迟队列				注意生产者score升序
+ *  key 				队列key
+ *  interval			查询间隔 单位s
+ *  delayThreshold		获取延时阈值,处理条件 (now - ctime)>=delayThreshold	单位s
+ *  handler				任务处理函数
+ */
+func (this *RedisDao) DelayConsume(key string, interval int64, threshold func() int64, handler func(task string) error) error {
+
+	ticker := time.NewTicker(time.Second * time.Duration(interval))
+
+	for now := range ticker.C {
+		deadline := now.Unix() - threshold()
+		tasks, err := this.ZRANGEDelayTask(key, deadline)
+		if err != nil {
+			fmt.Printf("DelayConsume ZRANGEDelayTask err=%v\n", err)
+			continue
+		}
+
+		for _, task := range tasks {
+			err = handler(task)
+			if err != nil {
+				fmt.Printf("DelayConsume ZRANGEDelayTask handler err=%v\n", err)
+			}
+		}
+	}
+	return nil
 }
 
 //EXPIRE 设置一个key 的过期时间 返回值int 1 如果设置了过期时间 0 如果没有设置过期时间，或者不能设置过期时间
