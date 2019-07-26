@@ -803,7 +803,10 @@ func (this *RedisDao) DelayConsume(topic string,
 
 	for now := range ticker.C {
 		deadline := now.Unix() - threshold()
-		this.delayDo(deadline, topic, retryThreshold, handler, alarm)
+		err := this.delayDo(deadline, topic, retryThreshold, handler, alarm)
+		if err != nil {
+			fmt.Println("DelayConsume delayDo err=", err)
+		}
 	}
 	return
 }
@@ -831,8 +834,9 @@ func (this *RedisDao) delayDo(deadline int64,
 
 		err = handler(delayTask.Data, ctime)
 		if err != nil {
+			tmp := delayTask.incRetry().toString()
 			if delayTask.HasRetry < retryThreshold {
-				_, e := this.ZADD(topic, ctime, delayTask.incRetry().toString())
+				_, e := this.ZADD(topic, ctime, tmp)
 				fmt.Println("DelayConsume ZRANGEDelayTask handler err=", err, "ZADD err", e, "HasRetry", delayTask.HasRetry)
 			} else {
 				alarm(errors.Wrapf(err, "Task Info=%v retryThreshold=%v", delayTask.toString(), retryThreshold))

@@ -142,4 +142,5 @@ func TestDelayAdd(t *testing.T) {
 	}
 
 	t.Log(dao.DelayAdd("testDelay", 100))
+	t.Log(dao.DelayAdd("testDelay", 200))
 }
