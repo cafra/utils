@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -44,10 +45,7 @@ func TestGetCache(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	tt := struct {
-		Name string
-		Age  int
-	}{}
+	var tt interface{}
 
 	f := func() (a interface{}, err error) {
 		a = &struct {
@@ -60,8 +58,10 @@ func TestGetCache(t *testing.T) {
 		return
 	}
 
-	err = dao.GetCache("666", tt, 1000, true, f)
-	t.Logf("over %v	%v", tt, err)
+	err = dao.GetCache("666", &tt, 1000, true, f)
+	bs, err := json.Marshal(tt)
+
+	t.Logf("over %s	%v", bs, err)
 }
 
 var f = func() (a interface{}, err error) {
