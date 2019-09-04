@@ -866,12 +866,24 @@ func (t *delayTask) toString() string {
 	return bytes.NewBuffer(bs).String()
 }
 
-func (this *RedisDao) DelayAdd(topic string, task interface{}) (err error) {
-	ctime := time.Now().Unix()
+/**
+ * DelayAdd 加入延迟队列
+ *
+ * param: string      topic
+ * param: interface{} task
+ * param: int64       ctime 创建时间,不设置则是当前时间
+ * return: error
+ */
+func (this *RedisDao) DelayAdd(topic string, task interface{}, ctime int64) (err error) {
+	if ctime <= 0 {
+		ctime = time.Now().Unix()
+	}
+
 	taskTmp := delayTask{
 		Data:  task,
 		CTime: ctime,
 	}
+
 	bs, err := json.Marshal(taskTmp)
 	if err != nil {
 		errors.Wrapf(err, "DelayAdd topic=%v task=%v", topic, task)
