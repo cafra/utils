@@ -144,3 +144,34 @@ func TestDelayAdd(t *testing.T) {
 	t.Log(dao.DelayAdd("testDelay", 100, 0))
 	t.Log(dao.DelayAdd("testDelay", 200, 1111111))
 }
+
+func TestStringSet(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	t.Log(dao.Set("k:1", "v1"))
+	t.Log(dao.Set("k:2", "v2"))
+
+	ks, err := dao.KEYS("k*")
+
+	rs, err := dao.MGet(ks)
+	t.Log(err)
+	t.Log(rs)
+}
+
+func BenchmarkMGet(b *testing.B) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	b.ReportAllocs()
+	dao.Set("k:1", "v1")
+	dao.Set("k:2", "v2")
+
+	ks, err := dao.KEYS("k*")
+
+	for i := 0; i < b.N; i++ {
+		b.Log(dao.MGet(ks))
+	}
+}

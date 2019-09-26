@@ -258,6 +258,23 @@ func (this *RedisDao) GetBytes(key string) (bs []byte, err error) {
 	return
 }
 
+func (this *RedisDao) MGet(keySet []string) (bs []string, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+
+	ts := make([]interface{}, 0)
+	for _, k := range keySet {
+		ts = append(ts, k)
+	}
+
+	bs, err = redis.Strings(conn.Do("MGET", ts...))
+	if err != nil {
+		err = errors.Wrapf(err, "MGET")
+		return
+	}
+	return
+}
+
 //GetInt
 func (this *RedisDao) GetInt(key string) (n int, err error) {
 	conn := this.redisPool.Get()
