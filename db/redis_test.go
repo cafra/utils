@@ -154,6 +154,7 @@ func TestStringSet(t *testing.T) {
 	t.Log(dao.Set("k:2", "v2"))
 
 	ks, err := dao.KEYS("k*")
+	//ks, err := dao.KEYS("o*")
 
 	rs, err := dao.MGet(ks)
 	t.Log(err)

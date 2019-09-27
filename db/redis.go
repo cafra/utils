@@ -259,6 +259,9 @@ func (this *RedisDao) GetBytes(key string) (bs []byte, err error) {
 }
 
 func (this *RedisDao) MGet(keySet []string) (bs []string, err error) {
+	if len(keySet)<=0{
+		return
+	}
 	conn := this.redisPool.Get()
 	defer conn.Close()
 
