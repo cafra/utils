@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	//"github.com/garyburd/redigo/redis"
 	"testing"
@@ -122,7 +123,7 @@ func TestDelayConsume(t *testing.T) {
 		panic(err)
 	}
 
-	dao.DelayConsume("testDelay", 2, func() int64 {
+	dao.DelayConsume("testDelay", time.Second, func() int64 {
 		return 10
 	}, func(task interface{}, ctime int64) error {
 		log.Printf("=================== %v", task)

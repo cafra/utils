@@ -259,7 +259,7 @@ func (this *RedisDao) GetBytes(key string) (bs []byte, err error) {
 }
 
 func (this *RedisDao) MGet(keySet []string) (bs []string, err error) {
-	if len(keySet)<=0{
+	if len(keySet) <= 0 {
 		return
 	}
 	conn := this.redisPool.Get()
@@ -806,20 +806,20 @@ func (this *RedisDao) ZREVRANK(key string, member string) (num int, err error) {
 /**
  *  延迟队列				注意生产者score升序
  *  key 				队列key
- *  interval			查询间隔 单位s
+ *  interval			查询间隔
  *  delayThreshold		获取延时阈值,处理条件 (now - ctime)>=delayThreshold	单位s
  *  handler				任务处理函数: 报错时,tash 重现放回队列
  *  retryThreshold   	错误重试次数阈值
  *	alarm				报警方法:
  */
 func (this *RedisDao) DelayConsume(topic string,
-	interval int64,
+	interval time.Duration,
 	threshold func() int64,
 	handler func(task interface{}, ctime int64) error,
 	retryThreshold int,
 	alarm func(err error)) {
 
-	ticker := time.NewTicker(time.Second * time.Duration(interval))
+	ticker := time.NewTicker(interval)
 
 	for now := range ticker.C {
 		deadline := now.Unix() - threshold()
