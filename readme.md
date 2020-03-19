@@ -21,6 +21,7 @@
 - redis的封装
 - mysql的封装
 - mongo的封装
+- LRU 内存缓存
 
 ### 消息队列
   - nsq
