@@ -80,3 +80,11 @@ func (m *memCache) Iterate(hundler func(key string, value interface{})) {
 		hundler(item.key, item.data)
 	}
 }
+
+func (m *memCache) Close() {
+	m.Range(func(key, value interface{}) bool {
+		m.Delete(key)
+		return true
+	})
+	m.DataList.Init()
+}
