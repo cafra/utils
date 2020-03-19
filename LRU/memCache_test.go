@@ -28,6 +28,7 @@ func TestGetMemCache(t *testing.T) {
 	}
 }
 
+//参考 https://www.jianshu.com/p/74a4efacb0a7
 func TestMemCache_Get(t *testing.T) {
 	c := GetMemCache(WithCapability(3))
 	c.Set("k1", 7)
