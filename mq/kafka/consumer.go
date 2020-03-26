@@ -16,6 +16,7 @@ type Consumer struct {
 }
 type Handler func(*sarama.ConsumerMessage) error
 
+
 func NewConsumer(brokers, topics, group_id string) (consumer *Consumer, err error) {
 	consumer = new(Consumer)
 	groupID := group_id
@@ -51,7 +52,7 @@ func NewConsumer(brokers, topics, group_id string) (consumer *Consumer, err erro
 	return
 }
 
-// Handler 错误则不commit.下次启动可在此消费
+ //Handler 错误则不commit.下次启动可在此消费
 func (c *Consumer) Serve(h Handler) (err error) {
 	for {
 		select {

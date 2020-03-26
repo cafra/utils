@@ -1,7 +1,11 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"time"
+
 	//"github.com/garyburd/redigo/redis"
 	"testing"
 )
@@ -42,10 +46,7 @@ func TestGetCache(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	tt := struct {
-		Name string
-		Age  int
-	}{}
+	var tt interface{}
 
 	f := func() (a interface{}, err error) {
 		a = &struct {
@@ -58,8 +59,10 @@ func TestGetCache(t *testing.T) {
 		return
 	}
 
-	err = dao.GetCache("666", tt, 1000, true, f)
-	t.Logf("over %v	%v", tt, err)
+	err = dao.GetCache("666", &tt, 1000, true, f)
+	bs, err := json.Marshal(tt)
+
+	t.Logf("over %s	%v", bs, err)
 }
 
 var f = func() (a interface{}, err error) {
@@ -104,4 +107,73 @@ func BenchmarkGetXXX(b *testing.B) {
 	}
 
 	//todo 并发10000 pprof 分析原因
+}
+
+func TestZRANGEDelayTask(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	t.Log(dao.ZRANGEDelayTask("testDelay", 1993886989))
+}
+
+func TestDelayConsume(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+
+	dao.DelayConsume("testDelay", time.Second, func() int64 {
+		return 10
+	}, func(task interface{}, ctime int64) error {
+		log.Printf("=================== %v", task)
+
+		return fmt.Errorf("test")
+	}, 3, func(err error) {
+		fmt.Println("alert", err)
+	})
+
+}
+
+func TestDelayAdd(t *testing.T) {
+
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Log(dao.DelayAdd("testDelay", 100, 0))
+	t.Log(dao.DelayAdd("testDelay", 200, 1111111))
+}
+
+func TestStringSet(t *testing.T) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	t.Log(dao.Set("k:1", "v1"))
+	t.Log(dao.Set("k:2", "v2"))
+
+	ks, err := dao.KEYS("k*")
+	//ks, err := dao.KEYS("o*")
+
+	rs, err := dao.MGet(ks)
+	t.Log(err)
+	t.Log(rs)
+}
+
+func BenchmarkMGet(b *testing.B) {
+	dao, err := NewRedisDao("redis://@127.0.0.1:6379/0?idle=100&active=1000&wait=true&timeout=3s", true)
+	if err != nil {
+		panic(err)
+	}
+	b.ReportAllocs()
+	dao.Set("k:1", "v1")
+	dao.Set("k:2", "v2")
+
+	ks, err := dao.KEYS("k*")
+
+	for i := 0; i < b.N; i++ {
+		b.Log(dao.MGet(ks))
+	}
 }

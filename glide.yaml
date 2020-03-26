@@ -1,9 +1,0 @@
-package: .
-import:
-- package: github.com/astaxie/beego
-  version: ^1.9.0
-  subpackages:
-  - logs
-- package: github.com/bitly/go-nsq
-  version: ^1.0.7
-- package: github.com/cafra/utils

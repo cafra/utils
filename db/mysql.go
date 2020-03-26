@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/astaxie/beego/logs"
 	//_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 )
@@ -205,7 +204,6 @@ func (d *MysqlDao) Transaction(handler func(session *xorm.Session) error) (err e
 			err = fmt.Errorf("Transaction panic =%v 	stack=%v", e, string(debug.Stack()))
 		}
 		if err != nil {
-			logs.Error(err)
 			if e := session.Rollback(); e != nil {
 				fmt.Println(e)
 			}
