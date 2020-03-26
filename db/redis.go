@@ -739,6 +739,17 @@ func (this *RedisDao) ZINCRBY(key string, increment int, member string) (num int
 	return
 }
 
+//ZINCRBY +increment  如果没有key 插入
+func (this *RedisDao) ZincrByFloat(key string, increment float64, member string) (num int, err error) {
+	conn := this.redisPool.Get()
+	defer conn.Close()
+	num, err = redis.Int(conn.Do("ZINCRBY", key, increment, member))
+	if err != nil {
+		return
+	}
+	return
+}
+
 //ZRANK 判断一个member 在key中的索引 如果不在 返回nil ,在 返回索引
 func (this *RedisDao) ZRANK(key string, member string) (num int, err error) {
 	conn := this.redisPool.Get()
