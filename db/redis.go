@@ -784,10 +784,10 @@ func (this *RedisDao) ZINCRBY(key string, increment int, member string) (num int
 }
 
 //ZINCRBY +increment  如果没有key 插入
-func (this *RedisDao) ZincrByFloat(key string, increment float64, member string) (num int, err error) {
+func (this *RedisDao) ZincrByFloat(key string, increment float64, member string) (num float64, err error) {
 	conn := this.redisPool.Get()
 	defer conn.Close()
-	num, err = redis.Int(conn.Do("ZINCRBY", key, increment, member))
+	num, err = redis.Float64(conn.Do("ZINCRBY", key, increment, member))
 	if err != nil {
 		return
 	}
